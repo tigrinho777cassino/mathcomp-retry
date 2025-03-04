@@ -25,7 +25,7 @@ function gerarProblemas() {
     let dificuldade = Math.pow(2, rodada);
 
     for (let i = 0; i < numProblemas; i++) {
-        const tipo = Math.floor(Math.random() * 7);  // Agora temos 7 tipos de problemas
+        const tipo = Math.floor(Math.random() * 8);  // Agora temos 8 tipos de problemas
         let questao, resposta;
 
         switch (tipo) {
@@ -33,7 +33,8 @@ function gerarProblemas() {
                 let a = Math.floor(Math.random() * dificuldade) + 1;
                 let b = Math.floor(Math.random() * dificuldade) + 1;
                 let operador = ["+", "-", "*", "/"][Math.floor(Math.random() * 4)];
-                resposta = operador === "/" ? (a / b).toFixed(2) : eval(`${a} ${operador} ${b}`);
+                resposta = operador === "/" ? (a / b) : eval(`${a} ${operador} ${b}`);
+                if (operador === "/") resposta = arredondarResposta(resposta); // Ajustar a divisão
                 questao = `${a} ${operador} ${b} = ?`;
                 break;
 
@@ -76,12 +77,22 @@ function gerarProblemas() {
                 questao = `Complete a igualdade: ${n4} + ${n5} = ?`;
                 break;
 
-            case 6: // Equações e Inequações
-                let coef1 = Math.floor(Math.random() * dificuldade) + 1;
-                let coef2 = Math.floor(Math.random() * dificuldade) + 1;
-                let eqTipo = Math.random() > 0.5 ? "=" : "≠"; // Pode ser uma equação ou inequação
-                resposta = coef1 === coef2 ? "verdadeira" : "falsa";
-                questao = `A equação ${coef1}x ${eqTipo} ${coef2} é verdadeira ou falsa?`;
+            case 6: // Equação do segundo grau
+                let a2 = Math.floor(Math.random() * (dificuldade / 2)) + 1;
+                let b2 = Math.floor(Math.random() * dificuldade) + 1;
+                let c2 = Math.floor(Math.random() * dificuldade) + 1;
+                // Fórmula de Bhaskara
+                let delta = b2 * b2 - 4 * a2 * c2;
+                if (delta >= 0) {
+                    let x1 = (-b2 + Math.sqrt(delta)) / (2 * a2);
+                    let x2 = (-b2 - Math.sqrt(delta)) / (2 * a2);
+                    resposta = `x1 = ${arredondarResposta(x1)}, x2 = ${arredondarResposta(x2)}`;
+                    questao = `Resolvendo a equação: ${a2}x² + ${b2}x + ${c2} = 0, encontre as raízes.`;
+                } else {
+                    // Para simplificar, vamos evitar gerar equações com delta negativo
+                    i--; // Repetir a iteração caso o delta seja negativo
+                    continue;
+                }
                 break;
         }
 
@@ -94,6 +105,15 @@ function gerarProblemas() {
             <input type="text" id="resposta${i}">
         `;
         container.appendChild(problemaDiv);
+    }
+}
+
+function arredondarResposta(resposta) {
+    // Verifica se a resposta é um número com casas decimais
+    if (Number.isInteger(resposta)) {
+        return resposta; // Se for inteiro, retorna sem casas decimais
+    } else {
+        return resposta.toFixed(1); // Arredonda para uma casa decimal
     }
 }
 
